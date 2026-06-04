@@ -1,18 +1,28 @@
-import {sortCollection, sortMap} from "../lib/sort.js";
-
 export function initSorting(columns) {
-    return (data, state, action) => {
-        let field = null;
-        let order = null;
+  return (query, state, action) => {
+    if (action && action.name === "sort") {
+      const clickedColumn = action.dataset.field;
+      if (state.sort === clickedColumn) {
+        state.order = state.order === "up" ? "down" : "up";
+      } else {
+        state.sort = clickedColumn;
+        state.order = "up";
+      }
 
-        if (action && action.name === 'sort') {
-            // @todo: #3.1 — запомнить выбранный режим сортировки
-
-            // @todo: #3.2 — сбросить сортировки остальных колонок
-        } else {
-            // @todo: #3.3 — получить выбранный режим сортировки
+      Object.keys(columns).forEach((columnName) => {
+        const col = columns[columnName];
+        if (col) {
+          const direction =
+            col.dataset.field === state.sort ? state.order : "none";
+          col.dataset.value = direction;
         }
-
-        return sortCollection(data, field, order);
+      });
     }
+
+    const sort =
+      state.sort && state.order !== "none"
+        ? `${state.sort}:${state.order}`
+        : null;
+    return sort ? Object.assign({}, query, { sort }) : query;
+  };
 }
