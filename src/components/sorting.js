@@ -1,4 +1,4 @@
-/* изменения внёс */
+/* изменения */
 import { sortMap } from "../lib/sort.js"; // sortCollection больше не нужен
 
 export function initSorting(columns) {
