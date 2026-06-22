@@ -1,4 +1,6 @@
 /* изменения внёс */
+import { sortMap } from "../lib/sort.js"; // sortCollection больше не нужен
+
 export function initSorting(columns) {
   return (query, state, action) => {
     if (action && action.name === "sort") {

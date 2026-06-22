@@ -9,8 +9,9 @@ import { processFormData } from "./lib/utils.js";
 import { initTable } from "./components/table.js";
 import { initPagination } from "./components/pagination.js";
 import { initFiltering } from "./components/filtering.js";
-// Шаг 4: Подключаем инициализацию поиска
 import { initSearching } from "./components/searching.js";
+// Шаг 5: Подключаем инициализацию сортировки
+import { initSorting } from "./components/sorting.js";
 
 // Вызов initData(sourceData) присваиваем константе api
 const api = initData(sourceData);
@@ -36,7 +37,10 @@ async function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let query = {}; // здесь будут формироваться параметры запроса
 
-  // Шаг 4: Применяем поиск (result заменяем на query)
+  // Шаг 5: Применяем сортировку (result заменяем на query)
+  query = applySorting(query, state, action);
+
+  // Шаг 4: Применяем поиск
   query = applySearching(query, state, action);
 
   // Шаг 3: Применяем фильтрацию
@@ -78,8 +82,11 @@ const { applyFiltering, updateIndexes } = initFiltering(
   sampleTable.filter.elements,
 );
 
-// Шаг 4: Инициализируем поиск и получаем функцию applySearching
+// Инициализируем поиск
 const applySearching = initSearching();
+
+// Шаг 5: Инициализируем сортировку и получаем функцию applySorting
+const applySorting = initSorting(sampleTable.columns);
 
 // Объявляем асинхронную функцию init() в конце файла
 async function init() {
