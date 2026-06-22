@@ -1,3 +1,4 @@
+/*Изменения добавил*/
 import { getPages } from "../lib/utils.js";
 
 export function initPagination(elements) {

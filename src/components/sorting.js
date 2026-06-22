@@ -1,3 +1,4 @@
+/* изменения внёс */
 export function initSorting(columns) {
   return (query, state, action) => {
     if (action && action.name === "sort") {
