@@ -10,7 +10,6 @@ import { initTable } from "./components/table.js";
 import { initPagination } from "./components/pagination.js";
 import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
-// Шаг 5: Подключаем инициализацию сортировки
 import { initSorting } from "./components/sorting.js";
 
 // Вызов initData(sourceData) присваиваем константе api
@@ -32,19 +31,20 @@ function collectState() {
  * Перерисовка состояния таблицы при любых изменениях
  * @param {HTMLButtonElement?} action
  */
-// Функцию render() делаем асинхронной
 async function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let query = {}; // здесь будут формироваться параметры запроса
 
-  // Шаг 5: Применяем сортировку (result заменяем на query)
+  // Применяем сортировку
   query = applySorting(query, state, action);
 
-  // Шаг 4: Применяем поиск
+  // Применяем поиск
   query = applySearching(query, state, action);
 
-  // Шаг 3: Применяем фильтрацию
-  query = applyFiltering(query, state, action);
+  // Применяем фильтрацию (безопасный вызов, если функция уже проинициализирована)
+  if (applyFiltering) {
+    query = applyFiltering(query, state, action);
+  }
 
   // Применяем пагинацию до запроса и обновляем query
   query = applyPagination(query, state, action);
@@ -59,44 +59,56 @@ async function render(action) {
   sampleTable.render(items);
 }
 
+// Передаем имена вспомогательных шаблонов для рендеринга до/после таблицы
 const sampleTable = initTable(
   {
     tableTemplate: "table",
     rowTemplate: "row",
-    before: [],
-    after: [],
+    before: ["filter"],
+    after: ["pagination"],
   },
   render,
 );
 
 // Инициализируем пагинацию
+const paginationContainer =
+  sampleTable.pagination?.container || sampleTable.container;
 const { applyPagination, updatePagination } = initPagination({
-  fromRow: sampleTable.container.querySelector('[data-element="from-row"]'),
-  toRow: sampleTable.container.querySelector('[data-element="to-row"]'),
-  totalRows: sampleTable.container.querySelector('[data-element="total-rows"]'),
-  pages: sampleTable.container.querySelector('[data-element="pages"]'),
+  fromRow: paginationContainer.querySelector('[data-element="from-row"]'),
+  toRow: paginationContainer.querySelector('[data-element="to-row"]'),
+  totalRows: paginationContainer.querySelector('[data-element="total-rows"]'),
+  pages: paginationContainer.querySelector('[data-element="pages"]'),
 });
-
-// Инициализируем фильтрацию
-const { applyFiltering, updateIndexes } = initFiltering(
-  sampleTable.filter?.elements ||
-    sampleTable.container.forms[0]?.elements ||
-    {},
-);
 
 // Инициализируем поиск
 const applySearching = initSearching();
 
-// Шаг 5: Инициализируем сортировку и получаем функцию applySorting
-const applySorting = initSorting(sampleTable.columns);
+// Инициализируем сортировку
+const applySorting = initSorting(
+  sampleTable.columns || sampleTable.elements || {},
+);
 
-// Объявляем асинхронную функцию init() в конце файла
+// Переменные для фильтрации объявляем глобально в модуле
+let applyFiltering, updateIndexes;
+
+// Асинхронная инициализация, выполняемая перед первой отрисовкой
 async function init() {
+  // Находим элементы фильтра из свойства или напрямую в форме DOM
+  const filterElements =
+    sampleTable.filter?.elements ||
+    sampleTable.container.querySelector("form")?.elements ||
+    {};
+
+  // Инициализируем фильтрацию, передавая элементы формы
+  const filtering = initFiltering(filterElements);
+  applyFiltering = filtering.applyFiltering;
+  updateIndexes = filtering.updateIndexes;
+
   // Получаем индексы с сервера
   const indexes = await api.getIndexes();
 
-  // Обновление индексов внутри init()
-  updateIndexes(sampleTable.filter.elements, {
+  // Наполняем выпадающий список продавцов
+  updateIndexes(filterElements, {
     searchBySeller: indexes.sellers,
   });
 }
@@ -104,5 +116,5 @@ async function init() {
 const appRoot = document.querySelector("#app");
 appRoot.appendChild(sampleTable.container);
 
-// Заменяем вызов render на init().then(render)
+// Запускаем инициализацию, а затем первичный рендер
 init().then(render);
