@@ -12,7 +12,6 @@ import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
 import { initSorting } from "./components/sorting.js";
 
-// Вызов initData(sourceData) присваиваем константе api
 const api = initData(sourceData);
 
 /**
@@ -35,10 +34,8 @@ async function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let query = {}; // здесь будут формироваться параметры запроса
 
-  // Применяем сортировку
   query = applySorting(query, state, action);
 
-  // Применяем поиск
   query = applySearching(query, state, action);
 
   // Применяем фильтрацию (безопасный вызов, если функция уже проинициализирована)
@@ -80,20 +77,15 @@ const { applyPagination, updatePagination } = initPagination({
   pages: paginationContainer.querySelector('[data-element="pages"]'),
 });
 
-// Инициализируем поиск
 const applySearching = initSearching();
 
-// Инициализируем сортировку
 const applySorting = initSorting(
   sampleTable.columns || sampleTable.elements || {},
 );
 
-// Переменные для фильтрации объявляем глобально в модуле
 let applyFiltering, updateIndexes;
 
-// Асинхронная инициализация, выполняемая перед первой отрисовкой
 async function init() {
-  // Находим элементы фильтра из свойства или напрямую в форме DOM
   const filterElements =
     sampleTable.filter?.elements ||
     sampleTable.container.querySelector("form")?.elements ||
