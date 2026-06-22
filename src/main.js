@@ -79,7 +79,9 @@ const { applyPagination, updatePagination } = initPagination({
 
 // Инициализируем фильтрацию
 const { applyFiltering, updateIndexes } = initFiltering(
-  sampleTable.filter.elements,
+  sampleTable.filter?.elements ||
+    sampleTable.container.forms[0]?.elements ||
+    {},
 );
 
 // Инициализируем поиск
