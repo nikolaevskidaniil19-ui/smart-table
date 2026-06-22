@@ -26,7 +26,6 @@ export function initData(sourceData) {
     return { sellers, customers };
   };
 
-  // Эмуляция сервера: фильтруем, сортируем и режем на страницы локальный массив
   const getRecords = async (query = {}) => {
     let result = [...data];
 

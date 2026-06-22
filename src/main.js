@@ -38,21 +38,16 @@ async function render(action) {
 
   query = applySearching(query, state, action);
 
-  // Применяем фильтрацию (безопасный вызов, если функция уже проинициализирована)
   if (applyFiltering) {
     query = applyFiltering(query, state, action);
   }
 
-  // Применяем пагинацию до запроса и обновляем query
   query = applyPagination(query, state, action);
 
-  // Запрашиваем данные с собранными параметрами с сервера (мок-апи)
   const { total, items } = await api.getRecords(query);
 
-  // Перерисовываем пагинатор после получения данных
   updatePagination(total, query);
 
-  // Передаем полученные элементы в таблицу
   sampleTable.render(items);
 }
 

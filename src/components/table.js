@@ -29,10 +29,6 @@ export function initTable(settings, onAction) {
     onAction(e.submitter);
   });
 
-  // @todo: #1.2   вывести дополнительные шаблоны до и после таблицы
-
-  // @todo: #1.3   обработать события и вызвать onAction()
-
   const render = (data) => {
     const nextRows = data.map((item) => {
       const row = cloneTemplate(rowTemplate);
