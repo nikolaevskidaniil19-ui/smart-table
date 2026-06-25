@@ -1,31 +1,44 @@
-/* изменения */
-import { sortMap } from "../lib/sort.js";
+import { sortCollection, sortMap } from "../lib/sort.js";
 
 export function initSorting(columns) {
   return (query, state, action) => {
-    if (action && action.name === "sort") {
-      const clickedColumn = action.dataset.field;
-      if (state.sort === clickedColumn) {
-        state.order = state.order === "up" ? "down" : "up";
-      } else {
-        state.sort = clickedColumn;
-        state.order = "up";
-      }
+    let field = null;
+    let order = null;
 
-      Object.keys(columns).forEach((columnName) => {
-        const col = columns[columnName];
-        if (col) {
-          const direction =
-            col.dataset.field === state.sort ? state.order : "none";
-          col.dataset.value = direction;
+    if (action && action.name === "sort") {
+      // @todo: #3.1 — запомнить выбранный режим сортировки
+
+      const nextOrder = sortMap[action.dataset.value] || "none";
+      action.dataset.value = nextOrder;
+
+      field = action.dataset.field;
+      order = nextOrder;
+
+      // @todo: #3.2 — сбросить сортировки остальных колонок
+      columns.forEach((column) => {
+        if (column.dataset.field !== action.dataset.field) {
+          column.dataset.value = "none";
+        }
+      });
+    } else {
+      // @todo: #3.3 — получить выбранный режим сортировки
+
+      columns.forEach((column) => {
+        if (column.dataset.value && column.dataset.value !== "none") {
+          field = column.dataset.field;
+          order = column.dataset.value;
         }
       });
     }
 
-    const sort =
-      state.sort && state.order !== "none"
-        ? `${state.sort}:${state.order}`
-        : null;
-    return sort ? Object.assign({}, query, { sort }) : query;
+    const sort = field && order !== "none" ? `${field}:${order}` : null;
+
+    if (sort) {
+      return Object.assign({}, query, { sort });
+    } else {
+      const newQuery = { ...query };
+      delete newQuery.sort;
+      return newQuery;
+    }
   };
 }

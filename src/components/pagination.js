@@ -1,67 +1,70 @@
-/*Изменения добавил*/
 import { getPages } from "../lib/utils.js";
 
-export function initPagination(elements) {
-  let pageCount;
+export const initPagination = (
+  { pages, fromRow, toRow, totalRows },
+  createPage,
+) => {
+  // @todo: #2.3 — подготовить шаблон кнопки для страницы и очистить контейнер
+
+  const pageTemplate = pages.firstElementChild
+    ? pages.firstElementChild.cloneNode(true)
+    : document.createElement("button");
+  pages.innerHTML = "";
+
+  let pageCount = 1;
 
   const applyPagination = (query, state, action) => {
-    const limit = Number(state.rowsPerPage) || 10;
-    let page = Number(state.page) || 1;
+    const limit = state.rowsPerPage;
+    let page = state.page;
 
-    if (action && action.name) {
-      if (action.name === "first") page = 1;
-      if (action.name === "prev" && page > 1) page -= 1;
-      if (action.name === "next" && page < pageCount) page += 1;
-      if (action.name === "last") page = pageCount;
-      if (action.name === "page") page = Number(action.value);
-    }
+    // @todo: #2.6 — обработать действия
+    if (action)
+      switch (action.name) {
+        case "prev":
+          page = Math.max(1, page - 1);
+          break;
+        case "next":
+          page = Math.min(pageCount, page + 1);
+          break;
+        case "first":
+          page = 1;
+          break;
+        case "last":
+          page = pageCount;
+          break;
 
-    state.page = page;
+        case "page":
+          page = Number(action.value);
+          break;
+      }
 
-    return Object.assign({}, query, { limit, page });
+    return Object.assign({}, query, {
+      limit,
+      page,
+    });
   };
 
   const updatePagination = (total, { page, limit }) => {
-    pageCount = Math.ceil(total / limit) || 1;
+    pageCount = total > 0 ? Math.ceil(total / limit) : 1;
 
-    const lowerIndex = (page - 1) * limit;
-    const upperIndex = lowerIndex + limit;
+    // @todo: #2.4 — получить список видимых страниц и вывести их
+    const visiblePages = getPages(page, pageCount, 5);
+    pages.replaceChildren(
+      ...visiblePages.map((pageNumber) => {
+        const el = pageTemplate.cloneNode(true);
+        return createPage(el, pageNumber, pageNumber === page);
+      }),
+    );
 
-    if (elements.fromRow)
-      elements.fromRow.textContent = total === 0 ? 0 : lowerIndex + 1;
-    if (elements.toRow)
-      elements.toRow.textContent = Math.min(upperIndex, total);
-    if (elements.totalRows) elements.totalRows.textContent = total;
+    // @todo: #2.5 — обновить статус пагинации
 
-    if (elements.pages) {
-      const container = elements.pages;
-      container.innerHTML = "";
-
-      const pagesArray = getPages(page, pageCount, 5);
-
-      pagesArray.forEach((pageNum) => {
-        const label = document.createElement("label");
-        label.className = "pagination-button";
-        if (pageNum === page) label.classList.add("active");
-
-        const input = document.createElement("input");
-        input.type = "radio";
-        input.name = "page";
-        input.value = pageNum;
-        if (pageNum === page) input.checked = true;
-
-        const span = document.createElement("span");
-        span.textContent = pageNum;
-
-        label.appendChild(input);
-        label.appendChild(span);
-        container.appendChild(label);
-      });
-    }
+    fromRow.textContent = total > 0 ? (page - 1) * limit + 1 : 0;
+    toRow.textContent = Math.min(page * limit, total);
+    totalRows.textContent = total;
   };
 
   return {
-    updatePagination,
     applyPagination,
+    updatePagination,
   };
-}
+};
