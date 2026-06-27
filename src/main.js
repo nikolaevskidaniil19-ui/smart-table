@@ -9,7 +9,7 @@ import { initSearching } from "./components/searching.js";
 import { initFiltering } from "./components/filtering.js";
 import { initSorting } from "./components/sorting.js";
 import { initPagination } from "./components/pagination.js";
-// @todo: подключение — импорты всех компонентов успешно выполнены выше
+// @todo: подключение
 
 // Исходные данные используемые в render()
 const api = initData();
@@ -37,7 +37,7 @@ function collectState() {
 async function render(action) {
   let state = collectState();
   let query = {};
-
+  // @todo: использование
   query = applySearching(query, state, action);
   query = applyFiltering(query, state, action);
   query = applySorting(query, state, action);
@@ -59,8 +59,8 @@ const sampleTable = initTable(
   render,
 );
 
+// @todo: инициализация
 const applySearching = initSearching("search");
-
 const { applyFiltering, updateIndexes } = initFiltering(
   sampleTable.filter.elements,
 );
@@ -89,11 +89,9 @@ async function init() {
   const indexes = await api.getIndexes();
 
   updateIndexes(sampleTable.filter.elements, {
-    seller: indexes.seller,
-    customer: indexes.customer,
+    searchBySeller: indexes.sellers,
   });
 }
 
 //render()
-
-init().then(() => render());
+init().then(render);

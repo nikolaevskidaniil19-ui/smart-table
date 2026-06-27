@@ -4,20 +4,17 @@ export const initPagination = (
   { pages, fromRow, toRow, totalRows },
   createPage,
 ) => {
-  // @todo: #2.3 — подготовить шаблон кнопки для страницы и очистить контейнер
+  // @todo: #2.3
+  const pageTemplate = pages.firstElementChild.cloneNode(true);
+  pages.firstElementChild.remove();
 
-  const pageTemplate = pages.firstElementChild
-    ? pages.firstElementChild.cloneNode(true)
-    : document.createElement("button");
-  pages.innerHTML = "";
-
-  let pageCount = 1;
+  let pageCount;
 
   const applyPagination = (query, state, action) => {
     const limit = state.rowsPerPage;
     let page = state.page;
 
-    // @todo: #2.6 — обработать действия
+    // @todo: #2.6
     if (action)
       switch (action.name) {
         case "prev":
@@ -32,10 +29,6 @@ export const initPagination = (
         case "last":
           page = pageCount;
           break;
-
-        case "page":
-          page = Number(action.value);
-          break;
       }
 
     return Object.assign({}, query, {
@@ -45,9 +38,9 @@ export const initPagination = (
   };
 
   const updatePagination = (total, { page, limit }) => {
-    pageCount = total > 0 ? Math.ceil(total / limit) : 1;
+    pageCount = Math.ceil(total / limit);
 
-    // @todo: #2.4 — получить список видимых страниц и вывести их
+    // @todo: #2.4
     const visiblePages = getPages(page, pageCount, 5);
     pages.replaceChildren(
       ...visiblePages.map((pageNumber) => {
@@ -56,9 +49,8 @@ export const initPagination = (
       }),
     );
 
-    // @todo: #2.5 — обновить статус пагинации
-
-    fromRow.textContent = total > 0 ? (page - 1) * limit + 1 : 0;
+    // @todo: #2.5
+    fromRow.textContent = (page - 1) * limit + 1;
     toRow.textContent = Math.min(page * limit, total);
     totalRows.textContent = total;
   };
